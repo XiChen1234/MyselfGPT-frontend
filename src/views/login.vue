@@ -42,11 +42,16 @@
 </template>
 
 <script setup>
-import {reactive, ref} from "vue";
+import {getCurrentInstance, reactive, ref} from "vue";
+import {useRouter, useRoute} from "vue-router";
+
+const instance = getCurrentInstance().appContext.config.globalProperties;
+const router = useRouter();
+const route = useRoute();
 
 // api接口集合
-const api  = {
-  login: "/api/login"
+const api = {
+  login: "/login"
 }
 
 const formData = reactive({
@@ -72,12 +77,23 @@ const rules = ref({
  */
 const loginSubmit = async () => {
   await formDataRef.value?.validate().catch(err => {
-    console.log("err")
     throw err
   })
+
   // 发送服务器登录请求
-  let url = api.login
-  console.log(url) // todo：向后端发送请求
+  let result = instance.Request({
+    url: api.login,
+    method: 'POST',
+    data: formData,
+    showLoading: true
+  })
+  if (!result) {
+    return
+  }
+
+  // 登录成功处理逻辑
+  instance.Message.success("登录成功")
+  await router.push("/") // todo: 假登录功能。
 }
 </script>
 
