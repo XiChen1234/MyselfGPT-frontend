@@ -2,13 +2,19 @@
   <div class="container">
     <div class="chat_image"></div>
     <div class="panel">
-      <el-form class="form">
+      <el-form
+          class="form"
+          :model="formData"
+          :rules="rules"
+          ref="formDataRef"
+          @submit.prevent>
         <h1 class="title">MySelfGPT - 登录</h1>
         <h3 class="title">你的智慧生活，一键触达</h3>
         <el-form-item prop="username">
           <el-input
               size="large"
-              placeholder="请输入账号">
+              placeholder="请输入账号"
+              v-model="formData.username">
             <template #prefix>
               <span class="iconfont icon-username"></span>
             </template>
@@ -17,14 +23,18 @@
         <el-form-item prop="password">
           <el-input
               size="large"
-              placeholder="请输入密码">
+              placeholder="请输入密码"
+              v-model="formData.password">
             <template #prefix>
               <span class="iconfont icon-password"></span>
             </template>
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" class="button"><span>登录</span></el-button>
+          <el-button
+              class="button"
+              type="primary"
+              @click="loginSubmit"><span>登录</span></el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -32,7 +42,43 @@
 </template>
 
 <script setup>
+import {reactive, ref} from "vue";
 
+// api接口集合
+const api  = {
+  login: "/api/login"
+}
+
+const formData = reactive({
+  username: '',
+  password: ''
+})
+const formDataRef = ref()
+
+// 校验规则
+const rules = ref({
+  username: [
+    {required: true, message: "账号不能为空", trigger: 'blur'},
+    {min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur'}
+  ],
+  password: [
+    {required: true, message: "密码不能为空", trigger: 'blur'},
+    {min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur'}
+  ]
+})
+
+/**
+ * 登录
+ */
+const loginSubmit = async () => {
+  await formDataRef.value?.validate().catch(err => {
+    console.log("err")
+    throw err
+  })
+  // 发送服务器登录请求
+  let url = api.login
+  console.log(url) // todo：向后端发送请求
+}
 </script>
 
 <style lang="scss" scoped>
