@@ -1,16 +1,20 @@
 @font-face {
     font-family: "iconfont"; /* Project id 4544343 */
-    src: url('//at.alicdn.com/t/c/font_4544343_q7sn7ht5ycq.woff2?t=1715586212174') format('woff2'),
-    url('//at.alicdn.com/t/c/font_4544343_q7sn7ht5ycq.woff?t=1715586212174') format('woff'),
-    url('//at.alicdn.com/t/c/font_4544343_q7sn7ht5ycq.ttf?t=1715586212174') format('truetype');
+    src: url('//at.alicdn.com/t/c/font_4544343_76rr8v32s1v.woff2?t=1715704490836') format('woff2'),
+    url('//at.alicdn.com/t/c/font_4544343_76rr8v32s1v.woff?t=1715704490836') format('woff'),
+    url('//at.alicdn.com/t/c/font_4544343_76rr8v32s1v.ttf?t=1715704490836') format('truetype');
 }
 
 .iconfont {
     font-family: "iconfont" !important;
-    font-size: 25px;
+    font-size: 16px;
     font-style: normal;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-send:before {
+    content: "\e6d5";
 }
 
 .icon-password:before {
