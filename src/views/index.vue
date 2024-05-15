@@ -1,6 +1,15 @@
 <template>
   <div class="main">
-    <div class="sidebar">侧边栏</div>
+    <div class="sidebar">
+      <div class="title">历史对话记录</div>
+      <el-button class="new-talk-button" type="primary">新建对话</el-button>
+      <el-scrollbar class="talk-list">
+        <el-text class="talk-item"
+                 truncated>
+          <span>对话1对话1对话1对话1对话1对话1</span>
+        </el-text>
+      </el-scrollbar>
+    </div>
     <div class="container">
       <div class="header">
         <div class="title">
@@ -10,8 +19,12 @@
         <img src="../assets/image/head.jpg" alt="head" class="avatar">
       </div>
       <el-scrollbar class="message-list">
-        <div class="message user">你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好</div>
-        <div class="message robot">你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好</div>
+        <div class="message user">
+          你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好
+        </div>
+        <div class="message robot">
+          你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好
+        </div>
       </el-scrollbar>
       <div class="input-area">
         <el-input class="input"
@@ -19,7 +32,7 @@
                   v-model="input"
                   :autosize="{minRows:1, maxRows:4}"
         ></el-input>
-        <el-button class="button" type="primary">发送</el-button>
+        <el-button class="send-button" type="primary">发送</el-button>
       </div>
       <p class="tip">内容由讯飞星火大模型生成，仅供您参考</p>
     </div>
@@ -45,6 +58,34 @@ const input = ref('')
   .sidebar {
     width: 200px;
     background-color: #1A1A22;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .title {
+      margin: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    .new-talk-button {
+      margin: 10px;
+    }
+
+    .talk-list {
+      width: 100%;
+
+      .talk-item {
+        width: 100%;
+        margin: auto;
+        padding: 10px 20px;
+      }
+
+      .talk-item:hover {
+        background-color: #3F3F46;
+      }
+    }
   }
 
   .container {
@@ -65,11 +106,13 @@ const input = ref('')
         align-items: center;
         justify-content: center;
         margin: 10px 20px;
+
         .logo {
           width: 180px;
           object-fit: contain;
         }
       }
+
       .avatar {
         margin: 0 20px;
         width: 50px;
@@ -92,11 +135,13 @@ const input = ref('')
         width: fit-content;
         max-width: 78%;
       }
+
       .message.user {
         margin-left: auto;
         background-color: rgba(216, 216, 216, 0.5);
         border-radius: 15px 15px 0 15px;
       }
+
       .message.robot {
         margin-right: auto;
         background-color: #879EB3;
@@ -118,7 +163,8 @@ const input = ref('')
       .input {
         margin: 20px;
       }
-      .button {
+
+      .send-button {
         margin: 20px 20px 20px 0;
       }
     }
