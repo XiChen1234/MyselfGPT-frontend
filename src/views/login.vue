@@ -23,6 +23,7 @@
         <el-form-item prop="password">
           <el-input
               size="large"
+              type="password"
               placeholder="请输入密码"
               v-model="formData.password">
             <template #prefix>
@@ -42,10 +43,11 @@
 </template>
 
 <script setup>
-import {getCurrentInstance, reactive, ref} from "vue";
+import {reactive, ref} from "vue";
 import {useRouter, useRoute} from "vue-router";
+import Message from "@/util/Message.js";
+import Request from "@/util/Request.js";
 
-const instance = getCurrentInstance().appContext.config.globalProperties;
 const router = useRouter();
 const route = useRoute();
 
@@ -81,19 +83,19 @@ const loginSubmit = async () => {
   })
 
   // 发送服务器登录请求
-  let result = instance.Request({
-    url: api.login,
-    method: 'POST',
-    data: formData,
-    showLoading: true
-  })
+  let result = Request({
+      url: api.login,
+      method: 'POST',
+      data: formData,
+      showLoading: true
+    })
   if (!result) {
     return
   }
 
   // 登录成功处理逻辑
-  instance.Message.success("登录成功")
-  await router.push("/") // todo: 假登录功能。
+  Message.success("登录成功")
+  await router.push("/index") // todo: 假登录功能。
 }
 </script>
 
