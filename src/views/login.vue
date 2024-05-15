@@ -44,17 +44,11 @@
 
 <script setup>
 import {reactive, ref} from "vue";
-import {useRouter, useRoute} from "vue-router";
+import {useRouter} from "vue-router";
 import Message from "@/util/Message.js";
-import Request from "@/util/Request.js";
+import {login} from "@/apis/login.js"
 
 const router = useRouter();
-const route = useRoute();
-
-// api接口集合
-const api = {
-  login: "/login"
-}
 
 const formData = reactive({
   username: '',
@@ -78,17 +72,15 @@ const rules = ref({
  * 登录
  */
 const loginSubmit = async () => {
+  // 校验
   await formDataRef.value?.validate().catch(err => {
     throw err
   })
 
-  // 发送服务器登录请求
-  let result = Request({
-      url: api.login,
-      method: 'POST',
-      data: formData,
-      showLoading: true
-    })
+  // 登录api
+  let result = await login(formData.username, formData.password)
+
+  // 登录失败
   if (!result) {
     return
   }

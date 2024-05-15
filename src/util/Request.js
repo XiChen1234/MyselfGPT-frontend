@@ -1,21 +1,20 @@
-import axios from 'axios'
-
+import axios from "axios";
 import {ElLoading} from "element-plus";
-
-import Message from '@/util/Message'
+import Message from "@/util/Message.js";
 
 const instance = axios.create({
     baseURL: "/api",
-    timeout: 10 * 1000 // 超时时间 10s
+    timeout: 10 * 1000
 })
 
-let loading = null
+let loading = null // loading对象
 
-// 请求前过滤器
+// 请求前拦截器
 instance.interceptors.request.use(
-    (config) => {
-        let {showLoading} = config
-        if (showLoading) {
+    config => {
+        const {showLoading = true} = config
+        // 加载loading
+        if(showLoading) {
             loading = ElLoading.service({
                 lock: true,
                 text: '加载中......',
@@ -24,63 +23,63 @@ instance.interceptors.request.use(
         }
 
         return config
-    },
-    (error) => {
+    }, error => {
         if (loading) {
             loading.close()
         }
-        Message.error("请求发送失败");
         return Promise.reject(error)
     }
-);
+)
 
-// 请求后过滤器
+// 请求后拦截器
 instance.interceptors.response.use(
-    (response) => {
-        const {showLoading, errorCallback} = response.config
-        if (showLoading && loading) {
+    response => {
+        const {showLoading = true, errorCallback} = response.config
+        // 关闭loading
+        if(showLoading && loading) {
             loading.close()
         }
-        console.log(response)
-        const data = response.data
 
-        // 请求成功！
-        if (data.status === 200) {
-            return data
+        const data = response.data
+        // 请求成功
+        if(data.status === 200) {
+            return data.data
         }
 
-        // 若他有自定义异常回调函数
-        if (errorCallback) {
+        // 请求不成功
+        if(errorCallback) {
             errorCallback(data.message)
         }
-        Message.error(data.message);
+        Message.error(data.message)
         return Promise.reject(data.message)
     },
-    (error) => {
-        if (loading) {
+    error => {
+        if(loading) {
             loading.close()
         }
         Message.error("网络异常");
         return Promise.reject(error)
     }
-);
-
+)
 
 /**
- * 请求封装
- * @param config 配置
+ * 导出的request封装
+ * @param config 自定义的配置
+ * 展开：
+ * @config {string} url 请求路径
+ * @config {string} method 请求方法
+ * @config {json} params 参数
+ * @config {json} data 请求体参数
+ * @config {boolean} showLoading 显示loading的选项
  */
 const request = (config) => {
-    const {url, method, data, param, showLoading} = config
-    switch (method) {
-        case 'GET':
-            return instance.get(url, param)
-        case 'POST':
-            return instance.post(url, data, {
-                showLoading: showLoading
-            })
-    }
+    return instance({
+        ...config,
+        url: config.url,
+        method: config.method || 'get',
+        params: config.params || {},
+        data: config.data || {},
+        showLoading: config.showLoading
+    })
 }
-
-
 export default request
