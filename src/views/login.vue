@@ -46,7 +46,7 @@
 import {reactive, ref} from "vue";
 import {useRouter} from "vue-router";
 import Message from "@/util/Message.js";
-import {login} from "@/apis/login.js"
+import {login} from "@/apis/API.js"
 
 const router = useRouter();
 
@@ -78,7 +78,7 @@ const loginSubmit = async () => {
   })
 
   // 登录api
-  let result = await login(formData.username, formData.password)
+  let result = login(formData.username, formData.password)
 
   // 登录失败
   if (!result) {

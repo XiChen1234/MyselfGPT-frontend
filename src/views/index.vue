@@ -6,11 +6,11 @@
       <el-scrollbar class="talk-list">
         <el-text class="talk-item"
                  truncated
-                 v-for="item in talkList.slice().reverse()" :key="item.index"
-                 @click="changeTalk(item.index)">
-          <span :class="{'checked' : item.index === indexTalk }">
-            {{ item.title }}
-          </span>
+                 v-for="(item, index) in talkList"
+                 @click="changeTalk(index)">
+                  <span :class="{'checked' : index === talkIndex }">
+                    {{ item.title }} {{ index }}
+                  </span>
         </el-text>
       </el-scrollbar>
     </div>
@@ -24,10 +24,9 @@
       </div>
       <el-scrollbar class="message-list">
         <div class="message robot">您好，我是Myself GPT智能助手，请问有什么能够帮您！\（^_^）/</div>
-        <div class="message"
-             :class="{ 'user': item.author === 'user', 'robot': item.author === 'robot' }"
-             v-for="item in talkList[indexTalk].messageList"
-        >{{ item.text }}
+        <div v-for="item in talkList[talkIndex].messageList" v-if="talkList.length !== 0">
+          <div class="message user">{{ item.request }}</div>
+          <div class="message robot">{{ item.response }}</div>
         </div>
       </el-scrollbar>
       <div class="input-area">
@@ -44,13 +43,26 @@
 </template>
 
 <script setup>
-import {ref, reactive} from 'vue'
-import data from '@/views/data/data.js'
-
-const talkList = reactive(data.talkList) // 存储对话列表
-let indexTalk = ref(talkList.length - 1); // 响应式记录当前对话的index
+import {ref, onMounted} from 'vue'
+import {getTalkList} from "@/apis/API.js";
 
 const input = ref('')
+
+const talkList = ref([])
+const talkIndex = ref()
+/**
+ * 获取talk列表
+ * @returns {Promise<void>}
+ */
+const getData = async () => {
+  // todo: 应该从session中去取的，这里先用假数据
+  const res = await getTalkList('1')
+  talkList.value = res
+  talkIndex.value = res.length - 1
+  console.log(talkList)
+  console.log(talkIndex)
+}
+onMounted(() => getData())
 
 /**
  * 发送信息
@@ -60,7 +72,7 @@ const sendMessage = () => {
     author: "user",
     text: input.value
   }
-  talkList[indexTalk.value].messageList.push(message)
+  talkList[talkIndex.value].messageList.push(message)
   input.value = ''
 
   // todo: 向服务器发送信息，等待服务器返回结果
@@ -70,13 +82,13 @@ const sendMessage = () => {
  * 创建新对话
  */
 const creatTalk = () => {
-  const index = talkList.length
+  const index = talkList.value.length
   const talk = {
     index: index,
     title: '新对话',
     messageList: []
   }
-  talkList.push(talk)
+  talkList.value.push(talk)
   changeTalk(index)
   // todo: 与服务器进行交互
 }
@@ -86,56 +98,12 @@ const creatTalk = () => {
  * @param index 当前对话index
  */
 function changeTalk(index) {
-  if (index === indexTalk.value) {
+  if (index === talkIndex.value) {
     return
   }
 
-  indexTalk.value = index // 更新
+  talkIndex.value = index // 更新index
 }
-
-// // 与服务器交互
-// /**
-//  * 发送信息到服务器，并且在界面上显示message
-//  */
-// const sendMessage = () => {
-//   const message = {
-//     author: "user",
-//     text: input.value
-//   }
-//   talkList.value[indexTalk.value].messageList.push(message)
-//   input.value = ''
-// }
-// /**
-//  * 新建对话按钮激活函数
-//  */
-// const creatTalk = () => {
-//   const index = talkList.value.length
-//   const talk = {
-//     index: index,
-//     title: '新对话',
-//     messageList: []
-//   }
-//   talkList.value.push(talk)
-//   checkTalk(index)
-//   // todo: 向服务器发送创建新对话的请求
-// }
-//
-// // 纯前端
-// function scrollbarDown() {
-//
-// }
-//
-// /**
-//  * 切换talk列表中的talk项目
-//  * @param index 项目索引
-//  */
-// function checkTalk(index) {
-//   if (index === indexTalk) {
-//     return
-//   }
-//   // todo: 切换talk
-//   indexTalk.value = index;
-// }
 </script>
 
 <style scoped lang="scss">
@@ -172,6 +140,8 @@ function changeTalk(index) {
 
     .talk-list {
       width: 100%;
+      display: flex;
+      flex-direction: column;
 
       .talk-item {
         width: 100%;
