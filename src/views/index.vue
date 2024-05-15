@@ -44,25 +44,28 @@
 
 <script setup>
 import {ref, onMounted} from 'vue'
-import {getTalkList} from "@/apis/API.js";
+import {creatNewTalk, getTalkList} from "@/apis/API.js";
 
 const input = ref('')
 
 const talkList = ref([])
 const talkIndex = ref()
+
+// 生命周期函数
+onMounted(() => getData())
+
 /**
  * 获取talk列表
  * @returns {Promise<void>}
  */
 const getData = async () => {
   // todo: 应该从session中去取的，这里先用假数据
-  const res = await getTalkList('1')
+  const [res] = await Promise.all([getTalkList('1')])
   talkList.value = res
   talkIndex.value = res.length - 1
   console.log(talkList)
   console.log(talkIndex)
 }
-onMounted(() => getData())
 
 /**
  * 发送信息
@@ -82,15 +85,18 @@ const sendMessage = () => {
  * 创建新对话
  */
 const creatTalk = () => {
-  const index = talkList.value.length
-  const talk = {
-    index: index,
-    title: '新对话',
-    messageList: []
+  const result = creatNewTalk('1')
+  // 创建成功
+  if(result) {
+    const index = talkList.value.length
+    const talk = {
+      index: index,
+      title: '新对话',
+      messageList: []
+    }
+    talkList.value.push(talk)
+    changeTalk(index)
   }
-  talkList.value.push(talk)
-  changeTalk(index)
-  // todo: 与服务器进行交互
 }
 
 /**

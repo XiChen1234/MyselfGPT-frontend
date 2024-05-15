@@ -22,9 +22,27 @@ export function login(username, password) {
     })
 }
 
+/**
+ * 获取talk列表
+ * @param {string} userId 用户id
+ * @returns {Array<Object>} talk列表
+ */
 export function getTalkList(userId) {
     return request({
         url: api.talk,
         params: {userId: userId}
+    })
+}
+
+/**
+ * 创建新的talk，发送至服务器
+ * @param {string} userId 用户id
+ * @returns {boolean} 创建结果
+ */
+export function creatNewTalk(userId) {
+    return request({
+        url: api.talk,
+        method: 'post',
+        data: {userId: userId}
     })
 }
