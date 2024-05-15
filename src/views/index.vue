@@ -2,11 +2,15 @@
   <div class="main">
     <div class="sidebar">
       <div class="title">历史对话记录</div>
-      <el-button class="new-talk-button" type="primary">新建对话</el-button>
+      <el-button class="new-talk-button" type="primary" @click="creatTalk">新建对话</el-button>
       <el-scrollbar class="talk-list">
         <el-text class="talk-item"
-                 truncated>
-          <span>对话1对话1对话1对话1对话1对话1</span>
+                 truncated
+                 v-for="item in talkList.slice().reverse()" :key="item.index"
+                 @click="changeTalk(item.index)">
+          <span :class="{'checked' : item.index === indexTalk }">
+            {{ item.title }}
+          </span>
         </el-text>
       </el-scrollbar>
     </div>
@@ -19,11 +23,11 @@
         <img src="../assets/image/head.jpg" alt="head" class="avatar">
       </div>
       <el-scrollbar class="message-list">
-        <div class="message user">
-          你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好
-        </div>
-        <div class="message robot">
-          你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好你也好
+        <div class="message robot">您好，我是Myself GPT智能助手，请问有什么能够帮您！\（^_^）/</div>
+        <div class="message"
+             :class="{ 'user': item.author === 'user', 'robot': item.author === 'robot' }"
+             v-for="item in talkList[indexTalk].messageList"
+        >{{ item.text }}
         </div>
       </el-scrollbar>
       <div class="input-area">
@@ -32,7 +36,7 @@
                   v-model="input"
                   :autosize="{minRows:1, maxRows:4}"
         ></el-input>
-        <el-button class="send-button" type="primary">发送</el-button>
+        <el-button class="send-button" type="primary" @click="sendMessage">发送</el-button>
       </div>
       <p class="tip">内容由讯飞星火大模型生成，仅供您参考</p>
     </div>
@@ -40,12 +44,105 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import {ref, reactive} from 'vue'
+import data from '@/views/data/data.js'
+
+const talkList = reactive(data.talkList) // 存储对话列表
+let indexTalk = ref(talkList.length - 1); // 响应式记录当前对话的index
 
 const input = ref('')
+
+/**
+ * 发送信息
+ */
+const sendMessage = () => {
+  const message = {
+    author: "user",
+    text: input.value
+  }
+  talkList[indexTalk.value].messageList.push(message)
+  input.value = ''
+
+  // todo: 向服务器发送信息，等待服务器返回结果
+}
+
+/**
+ * 创建新对话
+ */
+const creatTalk = () => {
+  const index = talkList.length
+  const talk = {
+    index: index,
+    title: '新对话',
+    messageList: []
+  }
+  talkList.push(talk)
+  changeTalk(index)
+  // todo: 与服务器进行交互
+}
+
+/**
+ * 修改对话场景
+ * @param index 当前对话index
+ */
+function changeTalk(index) {
+  if (index === indexTalk.value) {
+    return
+  }
+
+  indexTalk.value = index // 更新
+}
+
+// // 与服务器交互
+// /**
+//  * 发送信息到服务器，并且在界面上显示message
+//  */
+// const sendMessage = () => {
+//   const message = {
+//     author: "user",
+//     text: input.value
+//   }
+//   talkList.value[indexTalk.value].messageList.push(message)
+//   input.value = ''
+// }
+// /**
+//  * 新建对话按钮激活函数
+//  */
+// const creatTalk = () => {
+//   const index = talkList.value.length
+//   const talk = {
+//     index: index,
+//     title: '新对话',
+//     messageList: []
+//   }
+//   talkList.value.push(talk)
+//   checkTalk(index)
+//   // todo: 向服务器发送创建新对话的请求
+// }
+//
+// // 纯前端
+// function scrollbarDown() {
+//
+// }
+//
+// /**
+//  * 切换talk列表中的talk项目
+//  * @param index 项目索引
+//  */
+// function checkTalk(index) {
+//   if (index === indexTalk) {
+//     return
+//   }
+//   // todo: 切换talk
+//   indexTalk.value = index;
+// }
 </script>
 
 <style scoped lang="scss">
+.html {
+  scroll-behavior: smooth;
+}
+
 .main {
   position: absolute;
   width: 100%;
@@ -80,6 +177,10 @@ const input = ref('')
         width: 100%;
         margin: auto;
         padding: 10px 20px;
+
+        .checked {
+          color: #f5f5f5;
+        }
       }
 
       .talk-item:hover {
