@@ -9,7 +9,7 @@
                  v-for="(item, index) in talkList"
                  @click="changeTalk(index)">
                   <span :class="{'checked' : index === talkIndex }">
-                    {{ item.title }} {{ index }}
+                   {{ index }} {{ item.title }}
                   </span>
         </el-text>
       </el-scrollbar>
@@ -25,8 +25,13 @@
       <el-scrollbar class="message-list">
         <div class="message robot">您好，我是Myself GPT智能助手，请问有什么能够帮您！\（^_^）/</div>
         <div v-for="item in talkList[talkIndex].messageList" v-if="talkList.length !== 0">
-          <div class="message user">{{ item.request }}</div>
-          <div class="message robot">{{ item.response }}</div>
+          <div class="message user" v-if="item.request">{{ item.request }}</div>
+          <div class="message robot" v-if="item.response">{{ item.response }}</div>
+          <div class="loading" v-if="!item.response">
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
         </div>
       </el-scrollbar>
       <div class="input-area">
@@ -63,22 +68,20 @@ const getData = async () => {
   const [res] = await Promise.all([getTalkList('1')])
   talkList.value = res
   talkIndex.value = res.length - 1
-  console.log(talkList)
-  console.log(talkIndex)
 }
 
 /**
  * 发送信息
  */
 const sendMessage = () => {
+  console.log(talkList.value[talkIndex.value].messageList)
+  if (input.value === '') return
   const message = {
-    author: "user",
-    text: input.value
+    index: talkList.value[talkIndex.value].messageList.length,
+    request: input.value,
+    response: '',
   }
-  talkList[talkIndex.value].messageList.push(message)
-  input.value = ''
-
-  // todo: 向服务器发送信息，等待服务器返回结果
+  talkList.value[talkIndex.value].messageList.push(message)
 }
 
 /**
@@ -87,7 +90,7 @@ const sendMessage = () => {
 const creatTalk = () => {
   const result = creatNewTalk('1')
   // 创建成功
-  if(result) {
+  if (result) {
     const index = talkList.value.length
     const talk = {
       index: index,
@@ -221,9 +224,42 @@ function changeTalk(index) {
 
       .message.robot {
         margin-right: auto;
-        background-color: #879EB3;
+        background-color: #5a8cf1;
         color: #fff;
         border-radius: 15px 15px 15px 0;
+      }
+    }
+
+    .loading {
+      margin: 20px;
+      padding: 10px;
+      width: 100px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+
+      div {
+        width: 10px;
+        height: 10px;
+        background-color: #1A1A22;
+        border-radius: 50%;
+        animation: ball-beat 0.7s infinite linear;
+      }
+
+      div:nth-child(2n-1) {
+        animation-delay: -0.5s;
+      }
+
+      @keyframes ball-beat {
+        50% {
+          opacity: 0.2;
+          transform: scale(0.75);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
       }
     }
 
