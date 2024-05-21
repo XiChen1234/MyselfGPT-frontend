@@ -2,7 +2,8 @@ import request from '@/util/Request.js'
 
 const api = {
     login: '/login',
-    talk: '/chat/talk'
+    talk: '/chat/talk',
+    message: '/message'
 }
 
 /**
@@ -44,5 +45,24 @@ export function creatNewTalk(userId) {
         url: api.talk,
         method: 'post',
         data: {userId: userId}
+    })
+}
+
+/**
+ * 创建新的message
+ * @param {string} messageListId message列表的id
+ * @param {string} text 用户发的问题
+ * @param {number} index message的序号索引
+ * @returns {boolean} 保存结果
+ */
+export function creatNewMessage(messageListId, text, index) {
+    return request({
+        url: api.message,
+        method: 'post',
+        data: {
+            messageListId: messageListId,
+            request: text,
+            index: index
+        }
     })
 }

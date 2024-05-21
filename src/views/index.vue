@@ -49,7 +49,7 @@
 
 <script setup>
 import {ref, onMounted} from 'vue'
-import {creatNewTalk, getTalkList} from "@/apis/API.js";
+import {creatNewMessage, creatNewTalk, getTalkList} from "@/apis/API.js";
 
 const input = ref('')
 
@@ -76,11 +76,16 @@ ws.onmessage = (e) => {
 }
 
 /**
- * 向服务器发送消息的方法
- * @param message 消息文本
+ * 向服务器(websocket和http服务器）发送消息的方法
+ * @param {Object} message 消息对象
  */
 const sendMessage = (message) => {
-  ws.send(message)
+  // websocket服务器
+  ws.send(JSON.stringify(message))
+
+  // 正常服务器
+  const result = creatNewMessage(message.messageList, message.request, message.index)
+
 }
 
 
@@ -99,16 +104,16 @@ const getData = async () => {
  * 发送信息
  */
 const submit = () => {
-  console.log(talkList.value[talkIndex.value].messageList)
   if (input.value === '') return
   const message = {
     index: talkList.value[talkIndex.value].messageList.length,
-    request: input.value,
+    messageList: talkIndex.value.toString(),
+    request: input.value.toString(),
     response: '',
   }
   talkList.value[talkIndex.value].messageList.push(message)
   // todo: 发送服务器
-  sendMessage(input.value)
+  sendMessage(message)
   input.value = ""
 }
 
