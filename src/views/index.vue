@@ -40,7 +40,7 @@
                   v-model="input"
                   :autosize="{minRows:1, maxRows:4}"
         ></el-input>
-        <el-button class="send-button" type="primary" @click="sendMessage">发送</el-button>
+        <el-button class="send-button" type="primary" @click="submit">发送</el-button>
       </div>
       <p class="tip">内容由讯飞星火大模型生成，仅供您参考</p>
     </div>
@@ -59,6 +59,31 @@ const talkIndex = ref()
 // 生命周期函数
 onMounted(() => getData())
 
+
+// websocket相关内容
+// todo: 这里应该从session中去取的，这里先用假数据
+const ws = new WebSocket('ws://localhost:8089/api/websocket/1') // websocket对象
+
+/**
+ * 收到消息触发的函数
+ * @param e websocket事件
+ */
+ws.onmessage = (e) => {
+  console.log(e.data)
+  let index = talkList.value[talkIndex.value].messageList.length - 1
+
+  talkList.value[talkIndex.value].messageList[index].response = e.data
+}
+
+/**
+ * 向服务器发送消息的方法
+ * @param message 消息文本
+ */
+const sendMessage = (message) => {
+  ws.send(message)
+}
+
+
 /**
  * 获取talk列表
  * @returns {Promise<void>}
@@ -73,7 +98,7 @@ const getData = async () => {
 /**
  * 发送信息
  */
-const sendMessage = () => {
+const submit = () => {
   console.log(talkList.value[talkIndex.value].messageList)
   if (input.value === '') return
   const message = {
@@ -82,6 +107,9 @@ const sendMessage = () => {
     response: '',
   }
   talkList.value[talkIndex.value].messageList.push(message)
+  // todo: 发送服务器
+  sendMessage(input.value)
+  input.value = ""
 }
 
 /**
