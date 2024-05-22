@@ -12,7 +12,7 @@ let loading = null // loading对象
 // 请求前拦截器
 instance.interceptors.request.use(
     config => {
-        const {showLoading = true} = config
+        const {showLoading = false} = config
         // 加载loading
         if(showLoading) {
             loading = ElLoading.service({
@@ -34,7 +34,7 @@ instance.interceptors.request.use(
 // 请求后拦截器
 instance.interceptors.response.use(
     response => {
-        const {showLoading = true, errorCallback} = response.config
+        const {showLoading = false, errorCallback} = response.config
         // 关闭loading
         if(showLoading && loading) {
             loading.close()

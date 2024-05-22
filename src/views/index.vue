@@ -6,11 +6,11 @@
       <el-scrollbar class="talk-list">
         <el-text class="talk-item"
                  truncated
-                 v-for="(item, index) in talkList"
-                 @click="changeTalk(index)">
-                  <span :class="{'checked' : index === talkIndex }">
-                   {{ index }} {{ item.title }}
-                  </span>
+                 v-for="talk in talkList"
+                 @click="changeTalk(talk.index)">
+          <span :class="{ 'checked' : talk.index === talkIndex }">
+            {{ talk.index }} {{ talk.title }}
+          </span>
         </el-text>
       </el-scrollbar>
     </div>
@@ -24,10 +24,10 @@
       </div>
       <el-scrollbar class="message-list">
         <div class="message robot">您好，我是Myself GPT智能助手，请问有什么能够帮您！\（^_^）/</div>
-        <div v-for="item in talkList[talkIndex].messageList" v-if="talkList.length !== 0">
-          <div class="message user" v-if="item.request">{{ item.request }}</div>
-          <div class="message robot" v-if="item.response">{{ item.response }}</div>
-          <div class="loading" v-if="!item.response">
+        <div v-for="message in messageList" v-if="messageList.length !== 0">
+          <div class="message user" v-if="message.question">{{ message.index }} - {{ message.question }}</div>
+          <div class="message robot" v-if="message.answer">{{ message.index }} - {{ message.answer }}</div>
+          <div class="loading" v-if="!message.answer">
             <div></div>
             <div></div>
             <div></div>
@@ -40,112 +40,126 @@
                   v-model="input"
                   :autosize="{minRows:1, maxRows:4}"
         ></el-input>
-        <el-button class="send-button" type="primary" @click="submit">发送</el-button>
+        <el-button class="send-button" type="primary" @click="submit(input)">发送</el-button>
       </div>
-      <p class="tip">内容由讯飞星火大模型生成，仅供您参考</p>
+      <p class="tip">内容由讯飞星火大模型生成，仅供参考</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue'
-import {creatNewMessage, creatNewTalk, getTalkList} from "@/apis/API.js";
+import {onMounted, ref} from "vue";
+import {creatNewMessage, creatNewTalk, getTalkList, saveAnswer} from "@/apis/API.js";
 
-const input = ref('')
-
+// 初始化数据
 const talkList = ref([])
 const talkIndex = ref()
-
-// 生命周期函数
-onMounted(() => getData())
-
-
-// websocket相关内容
-// todo: 这里应该从session中去取的，这里先用假数据
-const ws = new WebSocket('ws://localhost:8089/api/websocket/1') // websocket对象
+const messageList = ref([])
+const input = ref('')
+const userId = 1
 
 /**
- * 收到消息触发的函数
- * @param e websocket事件
+ * 挂载阶段的钩子函数
+ */
+onMounted(() => {
+  getData(userId.toString()) // 获取初始数据 todo: 应该从session中去取的，这里先用假数据
+})
+
+// websocket
+const ws = new WebSocket('ws://localhost:8089/api/websocket/' + userId)
+/**
+ * websocket收到消息触发的函数
+ * @param e 事件对象
  */
 ws.onmessage = (e) => {
   console.log(e.data)
-  let index = talkList.value[talkIndex.value].messageList.length - 1
 
-  talkList.value[talkIndex.value].messageList[index].response = e.data
+  const data = JSON.parse(e.data)
+  const flag = data['flag'];
+  const text = data['text'];
+  const index = messageList.value.length - 1
+  messageList.value[index].answer = text
+
+  if (flag) {
+    saveAnswer(userId.toString(), talkIndex.value, text)
+  }
 }
 
 /**
- * 向服务器(websocket和http服务器）发送消息的方法
- * @param {Object} message 消息对象
+ * 向服务器发送信息，并将其存储
+ * @param {object} text 输入的信息
  */
-const sendMessage = (message) => {
+function sendMessage(text) {
   // websocket服务器
-  ws.send(JSON.stringify(message))
+  ws.send(text)
 
   // 正常服务器
-  const result = creatNewMessage(message.messageList, message.request, message.index)
-
+  creatNewMessage(messageList.value.length, text, talkIndex.value)
 }
 
+/**
+ * 发送消息
+ * @param {string} text 输入的内容
+ */
+function submit(text) {
+  if (text === '') return
+
+  // 向服务器发送数据
+  sendMessage(text)
+
+  // 前端自行处理数据
+  const message = {
+    index: messageList.value.length,
+    question: text,
+    answer: ''
+  }
+  messageList.value.push(message)
+  talkList.value[talkIndex.value].messageList = messageList.value
+  input.value = ''
+}
+
+/**
+ * 修改当前对话的场景
+ * @param {number} index 目标索引
+ */
+function changeTalk(index) {
+  if (index === talkIndex.value) return // 不切换则直接返回
+  talkIndex.value = index
+  messageList.value = talkList.value[index].messageList
+}
 
 /**
  * 获取talk列表
- * @returns {Promise<void>}
+ * @param {string} userId 用户id
  */
-const getData = async () => {
-  // todo: 应该从session中去取的，这里先用假数据
-  const [res] = await Promise.all([getTalkList('1')])
+// todo: 从session中取
+async function getData(userId) {
+  const [res] = await Promise.all([getTalkList(userId)])
+  console.log(res)
   talkList.value = res
   talkIndex.value = res.length - 1
+  messageList.value = res[res.length - 1].messageList
 }
 
 /**
- * 发送信息
+ * 创建一个新对话
  */
-const submit = () => {
-  if (input.value === '') return
-  const message = {
-    index: talkList.value[talkIndex.value].messageList.length,
-    messageList: talkIndex.value.toString(),
-    request: input.value.toString(),
-    response: '',
-  }
-  talkList.value[talkIndex.value].messageList.push(message)
-  // todo: 发送服务器
-  sendMessage(message)
-  input.value = ""
-}
+// todo: 从session中取
+function creatTalk() {
+  const index = talkList.value.length
+  const res = creatNewTalk(userId.toString())
 
-/**
- * 创建新对话
- */
-const creatTalk = () => {
-  const result = creatNewTalk('1')
-  // 创建成功
-  if (result) {
-    const index = talkList.value.length
+  if(res) {
     const talk = {
       index: index,
       title: '新对话',
       messageList: []
     }
-    talkList.value.push(talk)
+    talkList.value.push(index)
     changeTalk(index)
   }
 }
 
-/**
- * 修改对话场景
- * @param index 当前对话index
- */
-function changeTalk(index) {
-  if (index === talkIndex.value) {
-    return
-  }
-
-  talkIndex.value = index // 更新index
-}
 </script>
 
 <style scoped lang="scss">

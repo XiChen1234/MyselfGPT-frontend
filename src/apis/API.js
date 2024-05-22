@@ -2,8 +2,8 @@ import request from '@/util/Request.js'
 
 const api = {
     login: '/login',
-    talk: '/chat/talk',
-    message: '/message'
+    talk: '/talk',
+    message: '/talk/message'
 }
 
 /**
@@ -16,6 +16,7 @@ export function login(username, password) {
     return request({
         url: api.login,
         method: 'post',
+        showLoading: true,
         data: {
             username: username,
             password: password
@@ -44,25 +45,45 @@ export function creatNewTalk(userId) {
     return request({
         url: api.talk,
         method: 'post',
-        data: {userId: userId}
+        data: {
+            id: userId
+        }
     })
 }
 
 /**
- * 创建新的message
- * @param {string} messageListId message列表的id
- * @param {string} text 用户发的问题
- * @param {number} index message的序号索引
- * @returns {boolean} 保存结果
+ * 将发送的新消息进行保存
+ * @param message_index message的index
+ * @param question 用户发送的问题
+ * @param talk_index talk的index
  */
-export function creatNewMessage(messageListId, text, index) {
+export function creatNewMessage(message_index, question, talk_index) {
     return request({
         url: api.message,
         method: 'post',
         data: {
-            messageListId: messageListId,
-            request: text,
-            index: index
+            index: message_index,
+            talkIndex: talk_index,
+            question: question
         }
     })
 }
+
+/**
+ * 将结果保存到数据库中
+ * @param {string} userId 用户id
+ * @param {number} talkIndex 会话索引
+ * @param {string} answer 回答的结果
+ */
+export function saveAnswer(userId, talkIndex, answer) {
+    return request({
+        url: api.message,
+        method: 'put',
+        data: {
+            userId: userId,
+            talkIndex: talkIndex,
+            answer: answer
+        }
+    })
+}
+
