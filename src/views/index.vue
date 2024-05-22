@@ -9,7 +9,7 @@
                  v-for="talk in talkList"
                  @click="changeTalk(talk.index)">
           <span :class="{ 'checked' : talk.index === talkIndex }">
-            {{ talk.index }} {{ talk.title }}
+            {{ talk.title }}
           </span>
         </el-text>
       </el-scrollbar>
@@ -25,8 +25,8 @@
       <el-scrollbar class="message-list">
         <div class="message robot">您好，我是Myself GPT智能助手，请问有什么能够帮您！\（^_^）/</div>
         <div v-for="message in messageList" v-if="messageList.length !== 0">
-          <div class="message user" v-if="message.question">{{ message.index }} - {{ message.question }}</div>
-          <div class="message robot" v-if="message.answer">{{ message.index }} - {{ message.answer }}</div>
+          <div class="message user" v-if="message.question">{{ message.question }}</div>
+          <div class="message robot" v-if="message.answer">{{ message.answer }}</div>
           <div class="loading" v-if="!message.answer">
             <div></div>
             <div></div>
@@ -107,6 +107,11 @@ function submit(text) {
   // 向服务器发送数据
   sendMessage(text)
 
+  // 更新标题
+  if(talkList.value[talkIndex.value].title === "新对话") {
+    talkList.value[talkIndex.value].title = text
+  }
+
   // 前端自行处理数据
   const message = {
     index: messageList.value.length,
@@ -155,7 +160,7 @@ function creatTalk() {
       title: '新对话',
       messageList: []
     }
-    talkList.value.push(index)
+    talkList.value.push(talk)
     changeTalk(index)
   }
 }
@@ -177,6 +182,7 @@ function creatTalk() {
   overflow-y: hidden;
 
   .sidebar {
+    min-width: 200px;
     width: 200px;
     background-color: #1A1A22;
     display: flex;
@@ -261,6 +267,7 @@ function creatTalk() {
         font-size: 16px;
         width: fit-content;
         max-width: 78%;
+        white-space:pre-wrap;
       }
 
       .message.user {
