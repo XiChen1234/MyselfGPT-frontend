@@ -52,6 +52,21 @@ export function creatNewTalk(userId) {
 }
 
 /**
+ * 删除所有非示例对话
+ * @param {string} userId 用户id
+ * @returns {number} 删除结果
+ */
+export function deleteAllTalk(userId) {
+    return request({
+        url: api.talk,
+        method: 'delete',
+        data: {
+            id: userId
+        }
+    })
+}
+
+/**
  * 将发送的新消息进行保存
  * @param message_index message的index
  * @param question 用户发送的问题

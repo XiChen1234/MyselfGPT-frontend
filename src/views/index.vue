@@ -20,7 +20,10 @@
           <img src="../assets/image/logo.svg" alt="logo" class="logo">
           <span class="subtitle">你的智慧生活，一键触达</span>
         </div>
-        <img src="../assets/image/head.jpg" alt="head" class="avatar">
+        <div style="margin-right: 30px">
+          <img src="../assets/image/head.jpg" alt="head" class="avatar">
+          <el-button type="danger" @click="exitLogin">退出登录</el-button>
+        </div>
       </div>
       <el-scrollbar class="message-list">
         <div class="message robot">您好，我是Myself GPT智能助手，请问有什么能够帮您！\（^_^）/</div>
@@ -50,6 +53,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {creatNewMessage, creatNewTalk, getTalkList, saveAnswer} from "@/apis/API.js";
+import router from "@/router/index.js";
 
 // 初始化数据
 const talkList = ref([])
@@ -108,7 +112,7 @@ function submit(text) {
   sendMessage(text)
 
   // 更新标题
-  if(talkList.value[talkIndex.value].title === "新对话") {
+  if (talkList.value[talkIndex.value].title === "新对话") {
     talkList.value[talkIndex.value].title = text
   }
 
@@ -154,7 +158,7 @@ function creatTalk() {
   const index = talkList.value.length
   const res = creatNewTalk(userId.toString())
 
-  if(res) {
+  if (res) {
     const talk = {
       index: index,
       title: '新对话',
@@ -163,6 +167,13 @@ function creatTalk() {
     talkList.value.push(talk)
     changeTalk(index)
   }
+}
+
+/**
+ * 退出登录函数
+ */
+function exitLogin() {
+  router.push("/login")
 }
 
 </script>
@@ -267,7 +278,7 @@ function creatTalk() {
         font-size: 16px;
         width: fit-content;
         max-width: 78%;
-        white-space:pre-wrap;
+        white-space: pre-wrap;
       }
 
       .message.user {
